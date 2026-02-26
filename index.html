@@ -605,11 +605,11 @@
       <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.5rem,2.5vw,2rem);font-weight:700;margin-bottom:0.5rem;">Technical Blog</h2>
       <p style="color:var(--muted);font-size:0.8rem;margin-bottom:2.5rem;">Security architecture, cloud infrastructure, and lessons from the field. First posts publishing March 2026.</p>
       <div class="coming-soon-grid">
-        <div class="coming-card">
-          <span class="coming-badge">March 2026</span>
+        <div class="coming-card" style="cursor:pointer;" onclick="window.location='blog/container-security-architecture.html'">
+          <span class="coming-badge" style="color:var(--accent);border-color:rgba(0,229,255,0.3);">Published</span>
           <p class="coming-card-label">Blog Post</p>
-          <h3>Container Security Architecture</h3>
-          <p>Design decisions and trade-offs when building container security in production healthcare environments.</p>
+          <h3><a href="blog/container-security-architecture.html" style="color:var(--text);text-decoration:none;border-bottom:1px solid rgba(0,229,255,0.3);transition:color 0.2s;" onmouseover="this.style.color='var(--accent)'" onmouseout="this.style.color='var(--text)'">Container Security Architecture</a></h3>
+          <p>Design decisions and trade-offs when building container security in production environments — ECS Fargate, Kubernetes, and standalone Docker.</p>
         </div>
         <div class="coming-card">
           <span class="coming-badge">Q2 2026</span>
