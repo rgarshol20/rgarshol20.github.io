@@ -1,0 +1,532 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Container Security Architecture: Design Decisions That Actually Matter — Rory Garshol</title>
+  <meta name="description" content="Real lessons from securing containers across ECS Fargate, Kubernetes, and standalone Docker — focusing on image vulnerabilities and supply chain security." />
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c10;
+      --bg2: #0d1117;
+      --accent: #00e5ff;
+      --accent2: #ff6b35;
+      --text: #e8edf2;
+      --muted: #5a6a7a;
+      --border: #1a2535;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0; left: 0; right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(8, 12, 16, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      text-decoration: none;
+    }
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links { display: flex; gap: 2.5rem; list-style: none; }
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+    .nav-links a:hover { color: var(--accent); }
+
+    /* ARTICLE HEADER */
+    .article-header {
+      padding: 9rem 3rem 4rem;
+      max-width: 800px;
+      margin: 0 auto;
+      border-bottom: 1px solid var(--border);
+    }
+
+    .breadcrumb {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 2rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+    .breadcrumb a { color: var(--accent); text-decoration: none; }
+    .breadcrumb a:hover { text-decoration: underline; }
+
+    .article-tag {
+      display: inline-block;
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      border: 1px solid rgba(255, 107, 53, 0.3);
+      padding: 0.3rem 0.7rem;
+      margin-bottom: 1.5rem;
+    }
+
+    .article-title {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(2rem, 5vw, 3.25rem);
+      line-height: 1.1;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+    }
+
+    .article-subtitle {
+      font-size: 0.95rem;
+      color: var(--muted);
+      line-height: 1.7;
+      margin-bottom: 2rem;
+      max-width: 620px;
+    }
+
+    .article-meta {
+      display: flex;
+      gap: 2rem;
+      flex-wrap: wrap;
+    }
+
+    .meta-item {
+      display: flex;
+      flex-direction: column;
+      gap: 0.2rem;
+    }
+    .meta-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+    .meta-value {
+      font-size: 0.75rem;
+      color: var(--text);
+    }
+
+    /* ARTICLE BODY */
+    .article-body {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 4rem 3rem 6rem;
+    }
+
+    .article-body h2 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 700;
+      margin: 3rem 0 1rem;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .article-body h2::before {
+      content: '##';
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 400;
+      opacity: 0.7;
+    }
+
+    .article-body h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin: 2rem 0 0.75rem;
+      color: var(--accent);
+    }
+
+    .article-body p {
+      font-size: 0.875rem;
+      line-height: 1.85;
+      color: #9aacbe;
+      margin-bottom: 1.25rem;
+    }
+
+    .article-body strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .article-body a {
+      color: var(--accent);
+      text-decoration: none;
+      border-bottom: 1px solid rgba(0, 229, 255, 0.3);
+      transition: border-color 0.2s;
+    }
+    .article-body a:hover { border-color: var(--accent); }
+
+    /* CALLOUT BOX */
+    .callout {
+      border-left: 3px solid var(--accent);
+      background: rgba(0, 229, 255, 0.04);
+      padding: 1.25rem 1.5rem;
+      margin: 2rem 0;
+    }
+    .callout p {
+      margin-bottom: 0;
+      font-size: 0.85rem;
+      color: var(--text);
+    }
+    .callout-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.5rem;
+    }
+
+    /* WARNING CALLOUT */
+    .callout.warn {
+      border-left-color: var(--accent2);
+      background: rgba(255, 107, 53, 0.04);
+    }
+    .callout.warn .callout-label { color: var(--accent2); }
+
+    /* CODE BLOCK */
+    .code-block {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      padding: 1.5rem;
+      margin: 1.5rem 0;
+      overflow-x: auto;
+      position: relative;
+    }
+
+    .code-block-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      margin-bottom: 0.75rem;
+      display: flex;
+      align-items: center;
+      gap: 0.5rem;
+    }
+
+    .code-block-label::before {
+      content: '';
+      display: inline-block;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--accent);
+    }
+
+    .code-block code {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.78rem;
+      line-height: 1.7;
+      color: #a8d8ea;
+      white-space: pre;
+    }
+
+    .code-block code .comment { color: var(--muted); }
+    .code-block code .key { color: var(--accent); }
+    .code-block code .val { color: #ffd166; }
+    .code-block code .str { color: #a8d8ea; }
+
+    /* TAKEAWAY LIST */
+    .takeaway-list {
+      list-style: none;
+      margin: 1rem 0 1.5rem;
+      display: flex;
+      flex-direction: column;
+      gap: 0.6rem;
+    }
+
+    .takeaway-list li {
+      font-size: 0.85rem;
+      color: #9aacbe;
+      line-height: 1.6;
+      padding-left: 1.5rem;
+      position: relative;
+    }
+
+    .takeaway-list li::before {
+      content: '→';
+      position: absolute;
+      left: 0;
+      color: var(--accent);
+    }
+
+    /* SECTION DIVIDER */
+    .divider {
+      border: none;
+      border-top: 1px solid var(--border);
+      margin: 3rem 0;
+    }
+
+    /* CONCLUSION BOX */
+    .conclusion {
+      border: 1px solid var(--border);
+      background: var(--bg2);
+      padding: 2rem;
+      margin-top: 3rem;
+    }
+
+    .conclusion-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1rem;
+    }
+
+    .conclusion h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.1rem;
+      font-weight: 700;
+      margin-bottom: 0.75rem;
+      color: var(--text) !important;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 2.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+    footer p { font-size: 0.7rem; color: var(--muted); }
+    .social-links { display: flex; gap: 1.5rem; }
+    .social-links a {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .social-links a:hover { color: var(--accent); }
+
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .article-header, .article-body { padding-left: 1.5rem; padding-right: 1.5rem; }
+      footer { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <nav>
+    <a href="../index.html" class="nav-logo">RG<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="../index.html#about">About</a></li>
+      <li><a href="../index.html#projects">Projects</a></li>
+      <li><a href="../index.html#writing">Writing</a></li>
+      <li><a href="mailto:rory@rorygarshol.dev">Contact</a></li>
+    </ul>
+  </nav>
+
+  <header class="article-header">
+    <div class="breadcrumb">
+      <a href="../index.html">Home</a> / <a href="../index.html#writing">Writing</a> / Container Security
+    </div>
+    <span class="article-tag">Security Architecture</span>
+    <h1 class="article-title">Container Security Architecture: Design Decisions That Actually Matter</h1>
+    <p class="article-subtitle">After working with containers across ECS Fargate, Kubernetes, and standalone Docker — in production environments ranging from large-scale retail to healthcare — the problems that consistently bite teams aren't the complex ones. They're the supply chain fundamentals nobody enforced.</p>
+    <div class="article-meta">
+      <div class="meta-item">
+        <span class="meta-label">Published</span>
+        <span class="meta-value">March 2026</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Read Time</span>
+        <span class="meta-value">~10 minutes</span>
+      </div>
+      <div class="meta-item">
+        <span class="meta-label">Audience</span>
+        <span class="meta-value">Security & Cloud Engineers</span>
+      </div>
+    </div>
+  </header>
+
+  <article class="article-body">
+
+    <p>Container security gets treated like a checklist. Run a scanner. Enable some admission policies. Call it done. But when you're actually responsible for the environments — when you're the one getting paged at 2am — you start to realize that the checklist approach misses the point entirely.</p>
+
+    <p>This post is about the architectural decisions that matter when you're building container security into real infrastructure. Not the theoretical ideals, but the trade-offs you actually face when working across ECS Fargate in a large enterprise, Kubernetes in a training environment, and standalone Docker in a resource-constrained healthcare context.</p>
+
+    <h2>Start with the threat model, not the tool</h2>
+
+    <p>The first mistake I see teams make is reaching for tooling before they understand what they're actually protecting against. Container security means very different things depending on your environment:</p>
+
+    <ul class="takeaway-list">
+      <li>In a managed environment like ECS Fargate, you don't control the underlying host — your threat surface shifts almost entirely to the image and the runtime configuration.</li>
+      <li>In Kubernetes, you have significantly more attack surface: the control plane, etcd, node security, inter-pod network policies, RBAC — the list is long.</li>
+      <li>In standalone Docker, you're typically dealing with smaller teams, less enforcement tooling, and a higher likelihood that security is entirely manual.</li>
+    </ul>
+
+    <p>Knowing which environment you're in shapes every decision downstream. A control that's essential in Kubernetes may not even apply in Fargate, and vice versa. <strong>Spend the time to model your actual threat surface before you start building controls.</strong></p>
+
+    <div class="callout">
+      <p class="callout-label">Key Principle</p>
+      <p>The container runtime isn't your biggest risk. Your biggest risk is what's inside the image you're running — and the process that put it there.</p>
+    </div>
+
+    <h2>Image vulnerabilities: the supply chain problem nobody takes seriously enough</h2>
+
+    <p>Of all the container security problems I've worked through, image vulnerabilities and supply chain integrity are consistently the most underestimated. Not because people don't know they're important — everyone knows they're important — but because the organizational friction of actually enforcing controls here is significant.</p>
+
+    <p>The issue isn't scanning. Scanning is easy. The issue is what you do with scan results, who owns the remediation, and whether you have the organizational leverage to actually block deployments on critical findings.</p>
+
+    <h3>The three supply chain failures I see most often</h3>
+
+    <p><strong>1. Base image sprawl with no ownership.</strong> Teams pull whatever base image is convenient — ubuntu:latest, python:3.9, node:18 — with no consideration for who's responsible for keeping those images updated. Six months later, you have 40 different base images across your environment, many of which haven't been rebuilt since the original deployment. Every one of them is accumulating CVEs.</p>
+
+    <p><strong>2. Scanning that runs but doesn't gate.</strong> CI/CD pipelines get a scanner bolted on, findings get reported to a dashboard somewhere, and then nothing happens. The scanner is running, the findings are visible, but there's no enforcement gate that actually prevents a critically vulnerable image from reaching production. This gives the impression of security without any of the actual protection.</p>
+
+    <p><strong>3. Assuming the registry is the trust boundary.</strong> "We only pull from our internal registry" sounds like a good control until you realize the internal registry is a mirror of Docker Hub images that were pulled, scanned once at import time, and never rescanned. The registry isn't a trust boundary — it's a storage location. The trust boundary is the current vulnerability state of what's in it.</p>
+
+    <div class="callout warn">
+      <p class="callout-label">Common Mistake</p>
+      <p>Scanning at build time without rescanning in the registry creates a false sense of security. A clean image today will have new CVEs in 60 days. Your scanning strategy needs to account for images aging in the registry.</p>
+    </div>
+
+    <h2>Building an actual supply chain control architecture</h2>
+
+    <p>Here's the architecture pattern I've landed on after working through these problems in different environments. It's not revolutionary — the components are well-known — but the key is the enforcement chain, not any individual piece.</p>
+
+    <h3>Layer 1: Curated, owned base images</h3>
+
+    <p>Define a small set of approved base images that your organization owns and maintains. This means a dedicated pipeline that rebuilds these images on a schedule — not just when someone remembers — and pushes updated versions to your internal registry automatically. Teams inherit from these base images, not from public registries directly.</p>
+
+    <div class="code-block">
+      <div class="code-block-label">Dockerfile pattern — inheriting from internal base</div>
+      <code><span class="comment"># DON'T: Pull directly from public registry</span>
+FROM python:3.11-slim
+
+<span class="comment"># DO: Inherit from your org's maintained base image</span>
+FROM registry.internal.yourorg.com/base/python:3.11-slim-hardened
+
+<span class="comment"># Base image handles: OS patching, user config,</span>
+<span class="comment"># non-root defaults, removed unnecessary packages</span>
+WORKDIR /app
+COPY requirements.txt .
+RUN pip install --no-cache-dir -r requirements.txt
+COPY . .
+<span class="key">USER</span> <span class="val">nonroot</span>
+</code>
+    </div>
+
+    <h3>Layer 2: Scan at build, block on critical</h3>
+
+    <p>Integrate scanning into your CI/CD pipeline with a hard gate on critical and high severity findings. The key word is "block" — not "report." If a build produces an image with an unacknowledged critical CVE, the pipeline fails. No exceptions without a documented, time-bounded waiver.</p>
+
+    <p>The tooling here matters less than the enforcement. Trivy, Grype, Snyk, AWS ECR scanning — pick one your team will actually use and wire it to your pipeline gate. In ECS Fargate environments, ECR's native scanning integrates cleanly. In more heterogeneous environments, a tool like Trivy that runs anywhere is more practical.</p>
+
+    <h3>Layer 3: Continuous registry scanning</h3>
+
+    <p>Build-time scanning is table stakes. The harder problem is images that pass a clean scan at build time but accumulate CVEs as they sit in the registry waiting for deployment — or worse, after they're already running in production.</p>
+
+    <p>Your registry needs continuous or scheduled rescanning of stored images. ECR Enhanced Scanning does this natively. For other registries, a scheduled scan job against the full registry catalog isn't glamorous, but it closes the gap.</p>
+
+    <div class="code-block">
+      <div class="code-block-label">Conceptual: scheduled registry scan with alerting</div>
+      <code><span class="comment"># Simplified pattern for scheduled registry audit</span>
+<span class="comment"># Run daily against all image tags in production repos</span>
+
+for image in $(get_production_images):
+    results = trivy_scan(image, severity=["CRITICAL","HIGH"])
+    
+    if results.critical_count > 0:
+        <span class="comment"># Alert and create remediation ticket</span>
+        alert_security_team(image, results)
+        create_ticket(image, results, sla_days=7)
+    
+    if results.image_age_days > 90:
+        <span class="comment"># Flag for rebuild regardless of CVE state</span>
+        flag_for_rebuild(image)
+</code>
+    </div>
+
+    <h3>Layer 4: Runtime admission control</h3>
+
+    <p>In Kubernetes environments, admission controllers like OPA/Gatekeeper or Kyverno let you enforce image policies at the point of deployment — blocking pods that reference images without a valid scan attestation, or that don't come from your approved registry. This is a powerful enforcement layer that catches anything that slips through earlier gates.</p>
+
+    <p>In ECS Fargate, you don't have the same admission controller model, but you can enforce similar controls through IAM policies on task execution roles and ECR repository policies that restrict which images can be pulled.</p>
+
+    <p>Standalone Docker environments are the hardest to enforce programmatically — you're typically relying more heavily on process controls, approved image lists, and manual review. This is a real limitation that's worth acknowledging rather than pretending you have the same control surface as a managed platform.</p>
+
+    <hr class="divider" />
+
+    <h2>The organizational problem is harder than the technical one</h2>
+
+    <p>I've spent more of this post on technical controls than organizational dynamics, but honestly the organizational side is where container supply chain security usually breaks down in practice.</p>
+
+    <p>The specific failure mode is ownership ambiguity. Security teams can build all the scanning infrastructure they want, but if there's no clear answer to "who remediates this finding in this service?" — nothing gets fixed. Findings accumulate in dashboards, technical debt compounds, and the next time you're asked to demonstrate your security posture, you're looking at hundreds of unacknowledged CVEs across dozens of images.</p>
+
+    <ul class="takeaway-list">
+      <li>Define clear ownership for every image in your registry — a team, not just a repo.</li>
+      <li>Establish SLAs for remediation by severity and enforce them the same way you'd enforce any other security finding.</li>
+      <li>Make the remediation path as frictionless as possible — if rebuilding an image requires five manual steps, it won't happen promptly.</li>
+      <li>Separate the "we found a vulnerability" conversation from the "here's your approved waiver process" conversation. Both need to exist.</li>
+    </ul>
+
+    <div class="conclusion">
+      <p class="conclusion-label">TL;DR</p>
+      <h3>The architecture that actually works</h3>
+      <p style="color:#9aacbe;font-size:0.85rem;line-height:1.8;margin-bottom:0;">Container supply chain security isn't a single control — it's a chain: owned base images → build-time scanning with hard gates → continuous registry rescanning → runtime admission enforcement → clear remediation ownership. Any gap in that chain is where your actual risk lives. The specific tooling matters less than ensuring no step in the chain is missing or purely advisory. And whichever platform you're on — Fargate, Kubernetes, standalone Docker — be honest about what your control surface actually allows rather than architecting for an environment you don't have.</p>
+    </div>
+
+  </article>
+
+  <footer>
+    <p>© 2026 Rory Garshol — rorygarshol.dev</p>
+    <div class="social-links">
+      <a href="https://github.com/rgarshol20" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+      <a href="mailto:rory@rorygarshol.dev">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>
