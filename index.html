@@ -1,10 +1,641 @@
 <!DOCTYPE html>
-   <html>
-   <head>
-       <title>Rory Garshol - Security Engineer</title>
-   </head>
-   <body>
-       <h1>Rory Garshol</h1>
-       <p>Security Engineer Portfolio - Coming Soon</p>
-   </body>
-   </html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Rory Garshol — Security Engineer</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Syne:wght@400;700;800&family=JetBrains+Mono:wght@300;400;500&display=swap" rel="stylesheet" />
+  <style>
+    :root {
+      --bg: #080c10;
+      --bg2: #0d1117;
+      --accent: #00e5ff;
+      --accent2: #ff6b35;
+      --text: #e8edf2;
+      --muted: #5a6a7a;
+      --border: #1a2535;
+    }
+
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'JetBrains Mono', monospace;
+      overflow-x: hidden;
+    }
+
+    /* NOISE TEXTURE OVERLAY */
+    body::before {
+      content: '';
+      position: fixed;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 512 512' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noise'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noise)' opacity='0.03'/%3E%3C/svg%3E");
+      pointer-events: none;
+      z-index: 1000;
+      opacity: 0.4;
+    }
+
+    /* NAV */
+    nav {
+      position: fixed;
+      top: 0;
+      left: 0;
+      right: 0;
+      z-index: 100;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      padding: 1.25rem 3rem;
+      background: rgba(8, 12, 16, 0.85);
+      backdrop-filter: blur(12px);
+      border-bottom: 1px solid var(--border);
+    }
+
+    .nav-logo {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 1.1rem;
+      letter-spacing: 0.05em;
+      color: var(--text);
+      text-decoration: none;
+    }
+
+    .nav-logo span { color: var(--accent); }
+
+    .nav-links {
+      display: flex;
+      gap: 2.5rem;
+      list-style: none;
+    }
+
+    .nav-links a {
+      color: var(--muted);
+      text-decoration: none;
+      font-size: 0.75rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      transition: color 0.2s;
+    }
+
+    .nav-links a:hover { color: var(--accent); }
+
+    /* HERO */
+    .hero {
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      padding: 8rem 3rem 4rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    /* Grid background */
+    .hero::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image:
+        linear-gradient(rgba(0, 229, 255, 0.03) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(0, 229, 255, 0.03) 1px, transparent 1px);
+      background-size: 60px 60px;
+      mask-image: radial-gradient(ellipse 80% 80% at 50% 50%, black 30%, transparent 100%);
+    }
+
+    /* Glow blob */
+    .hero::after {
+      content: '';
+      position: absolute;
+      top: 20%;
+      right: -10%;
+      width: 600px;
+      height: 600px;
+      background: radial-gradient(circle, rgba(0, 229, 255, 0.06) 0%, transparent 70%);
+      pointer-events: none;
+    }
+
+    .hero-eyebrow {
+      font-size: 0.7rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.2s;
+    }
+
+    .hero-eyebrow::before {
+      content: '//';
+      margin-right: 0.5rem;
+      opacity: 0.5;
+    }
+
+    .hero-name {
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: clamp(3.5rem, 8vw, 7rem);
+      line-height: 0.95;
+      letter-spacing: -0.02em;
+      margin-bottom: 1.5rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.4s;
+    }
+
+    .hero-name .accent-line {
+      display: block;
+      color: var(--accent);
+      -webkit-text-stroke: 2px var(--accent);
+      color: transparent;
+    }
+
+    .hero-tagline {
+      font-size: clamp(0.9rem, 2vw, 1.1rem);
+      color: var(--muted);
+      max-width: 520px;
+      line-height: 1.7;
+      margin-bottom: 3rem;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.6s;
+    }
+
+    .hero-tagline strong {
+      color: var(--text);
+      font-weight: 500;
+    }
+
+    .hero-cta {
+      display: flex;
+      gap: 1rem;
+      flex-wrap: wrap;
+      opacity: 0;
+      animation: fadeUp 0.6s ease forwards 0.8s;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.875rem 1.75rem;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 0.75rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+
+    .btn-primary {
+      background: var(--accent);
+      color: #000;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover {
+      background: #fff;
+      transform: translateY(-2px);
+      box-shadow: 0 8px 30px rgba(0, 229, 255, 0.3);
+    }
+
+    .btn-outline {
+      background: transparent;
+      color: var(--text);
+      border: 1px solid var(--border);
+    }
+
+    .btn-outline:hover {
+      border-color: var(--accent);
+      color: var(--accent);
+      transform: translateY(-2px);
+    }
+
+    /* STATS BAR */
+    .stats-bar {
+      padding: 2.5rem 3rem;
+      border-top: 1px solid var(--border);
+      border-bottom: 1px solid var(--border);
+      display: flex;
+      gap: 4rem;
+      flex-wrap: wrap;
+      background: var(--bg2);
+    }
+
+    .stat {
+      display: flex;
+      flex-direction: column;
+      gap: 0.25rem;
+    }
+
+    .stat-number {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.5rem;
+      font-weight: 800;
+      color: var(--accent);
+      line-height: 1;
+    }
+
+    .stat-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+    }
+
+    /* ABOUT */
+    .about {
+      padding: 6rem 3rem;
+      max-width: 1100px;
+      margin: 0 auto;
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 6rem;
+      align-items: start;
+    }
+
+    .section-label {
+      font-size: 0.65rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 1.25rem;
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+    }
+
+    .section-label::after {
+      content: '';
+      height: 1px;
+      width: 40px;
+      background: var(--accent);
+      opacity: 0.4;
+    }
+
+    .about-heading {
+      font-family: 'Syne', sans-serif;
+      font-size: clamp(1.75rem, 3vw, 2.5rem);
+      font-weight: 700;
+      line-height: 1.2;
+      margin-bottom: 1.5rem;
+    }
+
+    .about-body {
+      color: var(--muted);
+      line-height: 1.8;
+      font-size: 0.85rem;
+    }
+
+    .about-body p + p { margin-top: 1rem; }
+
+    .about-body strong { color: var(--text); font-weight: 500; }
+
+    /* SKILLS */
+    .skills-grid {
+      display: flex;
+      flex-direction: column;
+      gap: 1rem;
+    }
+
+    .skill-category {
+      border: 1px solid var(--border);
+      padding: 1.25rem 1.5rem;
+      background: var(--bg2);
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s;
+    }
+
+    .skill-category:hover { border-color: rgba(0, 229, 255, 0.3); }
+
+    .skill-category::before {
+      content: '';
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 3px;
+      height: 100%;
+      background: var(--accent);
+    }
+
+    .skill-cat-name {
+      font-size: 0.65rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--accent);
+      margin-bottom: 0.6rem;
+    }
+
+    .skill-tags {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+    }
+
+    .tag {
+      font-size: 0.7rem;
+      padding: 0.25rem 0.6rem;
+      background: rgba(0, 229, 255, 0.07);
+      color: var(--text);
+      letter-spacing: 0.05em;
+    }
+
+    /* COMING SOON SECTIONS */
+    .coming-soon {
+      padding: 4rem 3rem;
+      background: var(--bg2);
+      border-top: 1px solid var(--border);
+    }
+
+    .coming-soon-inner {
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+
+    .coming-soon-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+      gap: 1.5rem;
+      margin-top: 2.5rem;
+    }
+
+    .coming-card {
+      border: 1px solid var(--border);
+      padding: 2rem;
+      position: relative;
+      overflow: hidden;
+      transition: border-color 0.2s, transform 0.2s;
+    }
+
+    .coming-card:hover {
+      border-color: rgba(0, 229, 255, 0.2);
+      transform: translateY(-3px);
+    }
+
+    .coming-card-label {
+      font-size: 0.6rem;
+      letter-spacing: 0.2em;
+      text-transform: uppercase;
+      color: var(--accent2);
+      margin-bottom: 0.75rem;
+    }
+
+    .coming-card h3 {
+      font-family: 'Syne', sans-serif;
+      font-size: 1rem;
+      font-weight: 700;
+      margin-bottom: 0.5rem;
+    }
+
+    .coming-card p {
+      font-size: 0.75rem;
+      color: var(--muted);
+      line-height: 1.6;
+    }
+
+    .coming-badge {
+      position: absolute;
+      top: 1.25rem;
+      right: 1.25rem;
+      font-size: 0.55rem;
+      letter-spacing: 0.15em;
+      text-transform: uppercase;
+      color: var(--muted);
+      border: 1px solid var(--border);
+      padding: 0.2rem 0.5rem;
+    }
+
+    /* FOOTER */
+    footer {
+      padding: 2.5rem 3rem;
+      border-top: 1px solid var(--border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    footer p {
+      font-size: 0.7rem;
+      color: var(--muted);
+    }
+
+    .social-links {
+      display: flex;
+      gap: 1.5rem;
+    }
+
+    .social-links a {
+      font-size: 0.7rem;
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      color: var(--muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+
+    .social-links a:hover { color: var(--accent); }
+
+    /* ANIMATIONS */
+    @keyframes fadeUp {
+      from { opacity: 0; transform: translateY(20px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    /* RESPONSIVE */
+    @media (max-width: 768px) {
+      nav { padding: 1rem 1.5rem; }
+      .nav-links { display: none; }
+      .hero { padding: 7rem 1.5rem 3rem; }
+      .stats-bar { padding: 2rem 1.5rem; gap: 2rem; }
+      .about { grid-template-columns: 1fr; gap: 3rem; padding: 4rem 1.5rem; }
+      .coming-soon { padding: 3rem 1.5rem; }
+      footer { padding: 2rem 1.5rem; }
+    }
+  </style>
+</head>
+<body>
+
+  <!-- NAV -->
+  <nav>
+    <a href="#" class="nav-logo">RG<span>.</span></a>
+    <ul class="nav-links">
+      <li><a href="#about">About</a></li>
+      <li><a href="#projects">Projects</a></li>
+      <li><a href="#writing">Writing</a></li>
+      <li><a href="mailto:rory@rorygarshol.dev">Contact</a></li>
+    </ul>
+  </nav>
+
+  <!-- HERO -->
+  <section class="hero">
+    <p class="hero-eyebrow">Security Engineer &amp; Architect</p>
+    <h1 class="hero-name">
+      Rory<br>
+      <span class="accent-line">Garshol</span>
+    </h1>
+    <p class="hero-tagline">
+      <strong>20 years securing complex infrastructure</strong> — from on-prem data centers to multi-cloud environments at scale. Specializing in cloud security architecture, infrastructure as code, and building security programs that actually work.
+    </p>
+    <div class="hero-cta">
+      <a href="#about" class="btn btn-primary">View My Work</a>
+      <a href="https://github.com/rgarshol20" target="_blank" class="btn btn-outline">GitHub →</a>
+    </div>
+  </section>
+
+  <!-- STATS -->
+  <div class="stats-bar">
+    <div class="stat">
+      <span class="stat-number">20+</span>
+      <span class="stat-label">Years in Security</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">4</span>
+      <span class="stat-label">SANS Certifications</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">2</span>
+      <span class="stat-label">Cloud Platforms</span>
+    </div>
+    <div class="stat">
+      <span class="stat-number">∞</span>
+      <span class="stat-label">Incidents Responded</span>
+    </div>
+  </div>
+
+  <!-- ABOUT -->
+  <section class="about" id="about">
+    <div class="about-left">
+      <p class="section-label">About</p>
+      <h2 class="about-heading">Security engineering at Staff &amp; Architect level</h2>
+      <div class="about-body">
+        <p>
+          I've spent two decades building and securing infrastructure — from early enterprise networks to today's multi-cloud environments. My work lives at the intersection of <strong>cloud security, infrastructure as code, and security automation</strong>.
+        </p>
+        <p>
+          Currently operating at Staff/Architect level with deep expertise in <strong>Azure and AWS security architecture</strong>, hub/spoke network topologies, Terraform infrastructure as code, and HIPAA compliance in healthcare environments.
+        </p>
+        <p>
+          I've led ransomware recovery efforts, designed multi-cloud DR strategies, and built security automation programs from the ground up. This portfolio documents that work — sanitized and packaged as reusable patterns.
+        </p>
+      </div>
+    </div>
+    <div class="about-right">
+      <p class="section-label">Core Skills</p>
+      <div class="skills-grid">
+        <div class="skill-category">
+          <p class="skill-cat-name">Cloud Platforms</p>
+          <div class="skill-tags">
+            <span class="tag">Azure</span>
+            <span class="tag">AWS</span>
+            <span class="tag">Hub/Spoke Networking</span>
+            <span class="tag">Multi-Cloud DR</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <p class="skill-cat-name">Infrastructure as Code</p>
+          <div class="skill-tags">
+            <span class="tag">Terraform</span>
+            <span class="tag">Reusable Modules</span>
+            <span class="tag">Azure Firewall</span>
+            <span class="tag">Palo Alto</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <p class="skill-cat-name">Security Engineering</p>
+          <div class="skill-tags">
+            <span class="tag">HIPAA Compliance</span>
+            <span class="tag">Security Automation</span>
+            <span class="tag">Ransomware Recovery</span>
+            <span class="tag">Threat Modeling</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <p class="skill-cat-name">Languages & Tools</p>
+          <div class="skill-tags">
+            <span class="tag">Python</span>
+            <span class="tag">SANS Frameworks</span>
+            <span class="tag">Container Security</span>
+            <span class="tag">GIAC Certified</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMING SOON - PROJECTS -->
+  <section class="coming-soon" id="projects">
+    <div class="coming-soon-inner">
+      <p class="section-label">Projects</p>
+      <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.5rem,2.5vw,2rem);font-weight:700;margin-bottom:0.5rem;">Terraform Modules &amp; Architecture Docs</h2>
+      <p style="color:var(--muted);font-size:0.8rem;">Reusable infrastructure patterns extracted from real healthcare and multi-cloud environments. Publishing Q1–Q2 2026.</p>
+      <div class="coming-soon-grid">
+        <div class="coming-card">
+          <span class="coming-badge">Coming Soon</span>
+          <p class="coming-card-label">Terraform Module</p>
+          <h3>Azure Hub/Spoke Network</h3>
+          <p>Reusable VNet modules with NSGs, firewall rules, and subnet patterns for enterprise hub/spoke topologies.</p>
+        </div>
+        <div class="coming-card">
+          <span class="coming-badge">Coming Soon</span>
+          <p class="coming-card-label">Architecture Doc</p>
+          <h3>Ransomware Recovery Playbook</h3>
+          <p>Timeline, decisions, and lessons learned from a real ransomware recovery and full infrastructure rebuild in Azure.</p>
+        </div>
+        <div class="coming-card">
+          <span class="coming-badge">Coming Soon</span>
+          <p class="coming-card-label">Terraform Module</p>
+          <h3>Multi-Cloud DR Strategy</h3>
+          <p>Azure primary + AWS secondary DR design with failover/failback procedures and infrastructure as code.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- COMING SOON - WRITING -->
+  <section style="padding:4rem 3rem;border-top:1px solid var(--border);" id="writing">
+    <div style="max-width:1100px;margin:0 auto;">
+      <p class="section-label">Writing</p>
+      <h2 style="font-family:'Syne',sans-serif;font-size:clamp(1.5rem,2.5vw,2rem);font-weight:700;margin-bottom:0.5rem;">Technical Blog</h2>
+      <p style="color:var(--muted);font-size:0.8rem;margin-bottom:2.5rem;">Security architecture, cloud infrastructure, and lessons from the field. First posts publishing March 2026.</p>
+      <div class="coming-soon-grid">
+        <div class="coming-card">
+          <span class="coming-badge">March 2026</span>
+          <p class="coming-card-label">Blog Post</p>
+          <h3>Container Security Architecture</h3>
+          <p>Design decisions and trade-offs when building container security in production healthcare environments.</p>
+        </div>
+        <div class="coming-card">
+          <span class="coming-badge">Q2 2026</span>
+          <p class="coming-card-label">Blog Post</p>
+          <h3>Building Security Automation</h3>
+          <p>Program design principles for security automation — what works, what doesn't, and how to scope it.</p>
+        </div>
+        <div class="coming-card">
+          <span class="coming-badge">Q2 2026</span>
+          <p class="coming-card-label">Blog Post</p>
+          <h3>Cloud Migration Lessons Learned</h3>
+          <p>Real lessons from migrating complex on-prem infrastructure to Azure after a ransomware incident.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- FOOTER -->
+  <footer>
+    <p>© 2026 Rory Garshol — rorygarshol.dev</p>
+    <div class="social-links">
+      <a href="https://github.com/rgarshol20" target="_blank">GitHub</a>
+      <a href="https://linkedin.com" target="_blank">LinkedIn</a>
+      <a href="mailto:rory@rorygarshol.dev">Email</a>
+    </div>
+  </footer>
+
+</body>
+</html>
