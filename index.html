@@ -262,6 +262,89 @@
       border-color: rgba(0, 229, 255, 0.3);
       transform: translateY(-2px);
     }
+    .cert-badge-img {
+      width: 72px;
+      height: 72px;
+      object-fit: contain;
+      margin-bottom: 0.5rem;
+    }
+    .cert-badge {
+      width: 72px;
+      height: 72px;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin-bottom: 0.5rem;
+      font-family: 'Syne', sans-serif;
+      font-weight: 800;
+      font-size: 0.7rem;
+      letter-spacing: 0.05em;
+      flex-shrink: 0;
+      position: relative;
+    }
+    .cert-badge::after {
+      content: '';
+      position: absolute;
+      inset: 3px;
+      border-radius: 50%;
+      border: 2px solid rgba(255,255,255,0.15);
+    }
+    .cert-badge.giac {
+      background: radial-gradient(circle at 35% 35%, #f5a623, #c47d0e);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(245,166,35,0.3);
+    }
+    .cert-badge.giac-red {
+      background: radial-gradient(circle at 35% 35%, #e03030, #a01010);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(220,50,50,0.3);
+    }
+    .cert-badge.comptia {
+      background: radial-gradient(circle at 35% 35%, #e8243c, #b01028);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(232,36,60,0.3);
+    }
+    .cert-badge.aws-pro {
+      background: radial-gradient(circle at 35% 35%, #1a6fa8, #0d4a72);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(26,111,168,0.3);
+    }
+    .cert-badge.aws-assoc {
+      background: radial-gradient(circle at 35% 35%, #4a9d5f, #2d6b3e);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(74,157,95,0.3);
+    }
+    .cert-badge.aws-found {
+      background: radial-gradient(circle at 35% 35%, #7b5ea7, #52397a);
+      color: #fff;
+      box-shadow: 0 4px 20px rgba(123,94,167,0.3);
+    }
+    .cert-badge.aws-spec {
+      background: radial-gradient(circle at 35% 35%, #555, #333);
+      color: #999;
+      box-shadow: none;
+      filter: grayscale(1);
+      opacity: 0.5;
+    }
+    .cert-badge-inner {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 1px;
+      z-index: 1;
+    }
+    .cert-badge-inner .badge-top {
+      font-size: 0.45rem;
+      letter-spacing: 0.12em;
+      opacity: 0.85;
+      text-transform: uppercase;
+    }
+    .cert-badge-inner .badge-main {
+      font-size: 0.9rem;
+      font-weight: 800;
+      line-height: 1;
+    }
     .cert-issuer {
       font-size: 0.6rem;
       letter-spacing: 0.2em;
@@ -557,7 +640,7 @@
       <span class="stat-label">Years in Security</span>
     </div>
     <div class="stat">
-      <span class="stat-number">Multi-Cloud</span>
+      <span class="stat-number"><strong>Multi</strong>-Cloud</span>
       <span class="stat-label">Azure + AWS</span>
     </div>
     <div class="stat">
@@ -565,8 +648,8 @@
       <span class="stat-label">Certifications</span>
     </div>
     <div class="stat">
-      <span class="stat-number">∞</span>
-      <span class="stat-label">Incidents Responded</span>
+      <span class="stat-number">3</span>
+      <span class="stat-label">Compliance Frameworks</span>
     </div>
   </div>
 
@@ -581,6 +664,7 @@
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;margin-bottom:2.5rem;">
         <a href="https://www.credly.com/earner/earned/share/d64328fd-ed62-44ca-83e6-c8e37077522b" target="_blank" style="text-decoration:none;">
           <div class="cert-card">
+            <div class="cert-badge giac-red"><div class="cert-badge-inner"><span class="badge-top">GIAC</span><span class="badge-main">GCIH</span></div></div>
             <div class="cert-issuer">GIAC</div>
             <div class="cert-name">Certified Incident Handler</div>
             <div class="cert-acronym">GCIH</div>
@@ -590,6 +674,7 @@
         </a>
         <a href="https://www.credly.com/earner/earned/share/94e73ad6-a31d-4fea-9397-dbc82600b5c1" target="_blank" style="text-decoration:none;">
           <div class="cert-card">
+            <div class="cert-badge giac"><div class="cert-badge-inner"><span class="badge-top">GIAC</span><span class="badge-main">GCSA</span></div></div>
             <div class="cert-issuer">GIAC</div>
             <div class="cert-name">Cloud Security Automation</div>
             <div class="cert-acronym">GCSA</div>
@@ -599,6 +684,7 @@
         </a>
         <a href="https://www.credly.com/earner/earned/share/5e4f6993-6efb-498b-925c-e05e4007114c" target="_blank" style="text-decoration:none;">
           <div class="cert-card">
+            <div class="cert-badge giac"><div class="cert-badge-inner"><span class="badge-top">GIAC</span><span class="badge-main">GPCS</span></div></div>
             <div class="cert-issuer">GIAC</div>
             <div class="cert-name">Public Cloud Security</div>
             <div class="cert-acronym">GPCS</div>
@@ -608,6 +694,7 @@
         </a>
         <a href="https://www.credly.com/earner/earned/share/96dcd4e0-9614-4141-b56b-8ae6a2d608cd" target="_blank" style="text-decoration:none;">
           <div class="cert-card">
+            <div class="cert-badge giac"><div class="cert-badge-inner"><span class="badge-top">GIAC</span><span class="badge-main">GAB</span></div></div>
             <div class="cert-issuer">GIAC</div>
             <div class="cert-name">Advisory Board Member</div>
             <div class="cert-acronym">GAB</div>
@@ -617,6 +704,7 @@
         </a>
         <a href="https://www.credly.com/earner/earned/share/ac61e160-fc18-4490-afdf-3e2e78f17174" target="_blank" style="text-decoration:none;">
           <div class="cert-card">
+            <div class="cert-badge comptia"><div class="cert-badge-inner"><span class="badge-top">CompTIA</span><span class="badge-main">Sec+</span></div></div>
             <div class="cert-issuer">CompTIA</div>
             <div class="cert-name">Security+ ce Certification</div>
             <div class="cert-acronym">Sec+</div>
@@ -629,6 +717,7 @@
       <p style="font-size:0.65rem;letter-spacing:0.2em;text-transform:uppercase;color:var(--muted);margin-bottom:1rem;">Amazon Web Services</p>
       <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:1rem;">
         <div class="cert-card">
+          <div class="cert-badge aws-pro"><div class="cert-badge-inner"><span class="badge-top">AWS</span><span class="badge-main">DOP</span></div></div>
           <div class="cert-issuer">AWS — Professional</div>
           <div class="cert-name">DevOps Engineer Professional</div>
           <div class="cert-acronym">DOP</div>
@@ -636,6 +725,7 @@
           <div class="cert-status active">Active</div>
         </div>
         <div class="cert-card">
+          <div class="cert-badge aws-assoc"><div class="cert-badge-inner"><span class="badge-top">AWS</span><span class="badge-main">SAA</span></div></div>
           <div class="cert-issuer">AWS — Associate</div>
           <div class="cert-name">Solutions Architect Associate</div>
           <div class="cert-acronym">SAA</div>
@@ -643,6 +733,7 @@
           <div class="cert-status active">Active</div>
         </div>
         <div class="cert-card">
+          <div class="cert-badge aws-found"><div class="cert-badge-inner"><span class="badge-top">AWS</span><span class="badge-main">CLF</span></div></div>
           <div class="cert-issuer">AWS — Foundational</div>
           <div class="cert-name">Cloud Practitioner</div>
           <div class="cert-acronym">CLF</div>
@@ -650,6 +741,7 @@
           <div class="cert-status active">Active</div>
         </div>
         <div class="cert-card">
+          <div class="cert-badge aws-spec"><div class="cert-badge-inner"><span class="badge-top">AWS</span><span class="badge-main">SCS</span></div></div>
           <div class="cert-issuer">AWS — Specialty</div>
           <div class="cert-name">Security Specialty</div>
           <div class="cert-acronym">SCS</div>
@@ -687,6 +779,8 @@
             <span class="tag">AWS</span>
             <span class="tag">Hub/Spoke Networking</span>
             <span class="tag">Multi-Cloud DR</span>
+            <span class="tag">Azure Firewall</span>
+            <span class="tag">ECS Fargate</span>
           </div>
         </div>
         <div class="skill-category">
@@ -694,26 +788,40 @@
           <div class="skill-tags">
             <span class="tag">Terraform</span>
             <span class="tag">Reusable Modules</span>
-            <span class="tag">Azure Firewall</span>
             <span class="tag">Palo Alto</span>
+            <span class="tag">NSG / Firewall Rules</span>
+            <span class="tag">IaC Security Baselines</span>
           </div>
         </div>
         <div class="skill-category">
           <p class="skill-cat-name">Security Engineering</p>
           <div class="skill-tags">
-            <span class="tag">HIPAA Compliance</span>
+            <span class="tag">Incident Response</span>
             <span class="tag">Security Automation</span>
             <span class="tag">Ransomware Recovery</span>
             <span class="tag">Threat Modeling</span>
+            <span class="tag">Container Security</span>
+            <span class="tag">SOC Operations</span>
+          </div>
+        </div>
+        <div class="skill-category">
+          <p class="skill-cat-name">Compliance & Frameworks</p>
+          <div class="skill-tags">
+            <span class="tag">HIPAA</span>
+            <span class="tag">PCI-DSS</span>
+            <span class="tag">SOC2</span>
+            <span class="tag">NIST CSF</span>
+            <span class="tag">SANS Frameworks</span>
           </div>
         </div>
         <div class="skill-category">
           <p class="skill-cat-name">Languages & Tools</p>
           <div class="skill-tags">
             <span class="tag">Python</span>
-            <span class="tag">SANS Frameworks</span>
-            <span class="tag">Container Security</span>
-            <span class="tag">GIAC Certified</span>
+            <span class="tag">PowerShell</span>
+            <span class="tag">Bash</span>
+            <span class="tag">Git</span>
+            <span class="tag">Kubernetes</span>
           </div>
         </div>
       </div>
